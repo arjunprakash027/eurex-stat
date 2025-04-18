@@ -26,8 +26,6 @@ class VacancySpider(scrapy.Spider):
         print(f"Final number: {final_number_int}")
         print(f"Parsing page: {response.url}")
 
-        final_number_int = 100
-
         # We go through evewry page and scrape the data using scrape_vacancy_data method of this class itself
         for page_number in range(0, final_number_int):
             next_url = f"{self.base_url}/jobs/search?page={page_number}"
