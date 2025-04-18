@@ -1,7 +1,7 @@
 .vscode
 
 #Bytecodes and compiled files
-pycache/
+**/pycache/
 *.py[cod]
 *$py.class
 *.so
