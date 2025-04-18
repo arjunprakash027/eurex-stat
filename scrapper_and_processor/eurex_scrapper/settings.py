@@ -48,15 +48,6 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-FEEDS = {
-    'output/jobs.csv': {
-        'format': 'csv',
-        'overwrite': True,
-        'encoding': 'utf-8',
-    }
-}
-
-
 ITEM_PIPELINES = {
    "eurex_scrapper.pipelines.VacancyCleanerPipeline": 100,
 }
