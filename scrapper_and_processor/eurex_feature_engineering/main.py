@@ -30,7 +30,6 @@ def run_transformations(
     print(f"Transformed data saved to transformed/{df_filename}")
 
 if __name__ == "__main__":
-    # Run the transformations
     run_transformations(recent=True)
     run_transformations(recent=False)
 

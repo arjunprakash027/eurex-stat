@@ -32,7 +32,6 @@ def build_pipeline() -> List[BaseTransformer]:
 
     pipeline: List[BaseTransformer] = []
     
-    # Add all the processors to the pipeline
     for processor in BaseTransformer.registry:
         pipeline.append(processor())
     
