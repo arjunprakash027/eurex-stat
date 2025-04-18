@@ -15,7 +15,7 @@ def load_processors() -> None:
     The processors should inherit from the BaseTransformer class.
     """
     # Dynamically load all the processors from the processor_1.py and other processor files - this is basically just using a import but dynamically
-    pkg = importlib.import_module("eurex_feature_engineering")
+    pkg = importlib.import_module("eurex_feature_engineering.transformers")
 
     for a, name, b in pkgutil.iter_modules(pkg.__path__):
         print(f"Loading processor: {name}")
