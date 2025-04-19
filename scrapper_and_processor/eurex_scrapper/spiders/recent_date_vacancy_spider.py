@@ -86,7 +86,7 @@ class RecentDateSpider(scrapy.Spider):
                 "department": job.xpath('.//div[contains(@class,"id-Department")]//div[2]/text()').get(),
                 "job_location": job.xpath('.//div[contains(@class,"id-Work-Locations")]//div[2]/text()').get(),
                 "job_field": ' '.join(job.xpath('.//div[contains(@class,"id-Research-Field")]//text()').getall()).strip(),
-                "job_profile": job.xpath('.//div[contains(@class,"id-Researcher-Profile")]//a/text()').get(),
+                "job_profile": ' '.join(job.xpath('.//div[contains(@class,"id-Researcher-Profile")]//text()').getall()).strip(),
                 "funding_program": job.xpath('.//div[contains(@class,"id-Funding-Programme")]//a/text()').get(),
                 "application_deadline": job.xpath('.//div[contains(@class,"id-Application-Deadline")]//time/text()').get(),
             }
