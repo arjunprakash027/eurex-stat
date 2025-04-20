@@ -89,6 +89,7 @@ class RecentDateSpider(scrapy.Spider):
                 "job_profile": ' '.join(job.xpath('.//div[contains(@class,"id-Researcher-Profile")]//text()').getall()).strip(),
                 "funding_program": job.xpath('.//div[contains(@class,"id-Funding-Programme")]//a/text()').get(),
                 "application_deadline": job.xpath('.//div[contains(@class,"id-Application-Deadline")]//time/text()').get(),
+                "origin_page": response.url
             }
 
                 yield vacancy_data

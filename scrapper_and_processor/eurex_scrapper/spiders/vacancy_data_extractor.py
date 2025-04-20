@@ -3,7 +3,10 @@ Scraping the vacancy data from the Euraxess website. Use this scrapper to get th
 """
 
 import scrapy
-from typing import Dict, Any, Generator
+from typing import Dict, Any, Generator, Union
+
+import scrapy.resolver
+from scrapy.exceptions import CloseSpider
 
 class VacancySpider(scrapy.Spider):
     """
@@ -42,28 +45,35 @@ class VacancySpider(scrapy.Spider):
 
         print(f"Final number: {final_number_int}")
         print(f"Parsing page: {response.url}")
-
-        # We go through evewry page and scrape the data using scrape_vacancy_data method of this class itself
-        for page_number in range(0, final_number_int):
-            next_url = f"{self.base_url}/jobs/search?page={page_number}"
-            yield scrapy.Request(
-                url=next_url,
-                callback=self.scrape_vacancy_data,
-                meta={
-                    "page_number": page_number
-                }
-            )
+        page_number = 0
+        
+        # We go through every page and scrape the data using scrape_vacancy_data method of this class itself
+        next_url = f"{self.base_url}/jobs/search?page={page_number}"
+        
+        yield scrapy.Request(
+            url=next_url,
+            callback=self.scrape_vacancy_data,
+            meta={
+                "page_number": page_number,
+                "final_page_number": final_number_int
+            }
+        )
             
     # This is where individual vacancy data for each page will be scraped
     def scrape_vacancy_data(self, 
                             response
-                        ) -> Generator[dict[str, Any], Any, Any]:
+                        ) -> Generator[Union[Dict[str,Any],scrapy.Request], None, None]:
         
         
         print(f"Scraping next page : {response.url}")
+        
+        page_number = response.meta.get("page_number")
+        final_page_number = response.meta.get("final_page_number")
 
         # Extracting the vacancy data
         job_list = response.xpath('//*[@id="oe-list-container"]/div[3]/div/ul/li')
+        
+        seen_links = []
         
         for job in job_list:
             vacancy_data = {
@@ -77,9 +87,28 @@ class VacancySpider(scrapy.Spider):
             "department": job.xpath('.//div[contains(@class,"id-Department")]//div[2]/text()').get(),
             "job_location": job.xpath('.//div[contains(@class,"id-Work-Locations")]//div[2]/text()').get(),
             "job_field": ' '.join(job.xpath('.//div[contains(@class,"id-Research-Field")]//text()').getall()).strip(),
-            "job_profile": ' '.join(job.xpath('.//div[contains(@class,"id-Researcher-Profile")]//div[2]/text()').getall()).strip(),
+            "job_profile": ' '.join(job.xpath('.//div[contains(@class,"id-Researcher-Profile")]//text()').getall()).strip(),
             "funding_program": job.xpath('.//div[contains(@class,"id-Funding-Programme")]//a/text()').get(),
             "application_deadline": job.xpath('.//div[contains(@class,"id-Application-Deadline")]//time/text()').get(),
+            "origin_page": response.url
         }
+            
+            if vacancy_data["job_link"] in seen_links:
+                raise CloseSpider(f"Seen a repeat of job ids at this page link : {response.url}")
+            
+            seen_links.append(vacancy_data["job_link"])
 
             yield vacancy_data
+        
+        if page_number < final_page_number:
+            page_number += 1
+            next_url = f"{self.base_url}/jobs/search?page={page_number}"
+            
+            yield scrapy.Request(
+                url=next_url,
+                callback=self.scrape_vacancy_data,
+                meta={
+                    "page_number": page_number,
+                    "final_page_number": final_page_number
+                    }
+            )
