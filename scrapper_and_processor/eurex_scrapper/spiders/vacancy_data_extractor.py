@@ -49,7 +49,7 @@ class VacancySpider(scrapy.Spider):
 
         print(f"Final number: {final_number_int}")
         print(f"Parsing page: {response.url}")
-        page_number = 0
+        page_number = 489
         
         # We go through every page and scrape the data using scrape_vacancy_data method of this class itself
         next_url = f"{self.base_url}/jobs/search?page={page_number}"
@@ -100,6 +100,7 @@ class VacancySpider(scrapy.Spider):
         }
             
             if vacancy_data["job_link"] in seen_links:
+                # todo : repeat the same page after some delay instead of throwing an error
                 raise CloseSpider(f"Seen a repeat of job ids at this page link : {response.url}")
             
             seen_links.append(vacancy_data["job_link"])
