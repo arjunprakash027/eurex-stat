@@ -14,10 +14,10 @@ def stack_and_dedup(dfs: list[pd.DataFrame], id_column: str) -> pd.DataFrame:
     # Count duplicates based on id_column
     duplicate_counts = df[id_column].value_counts()
     print(duplicate_counts)
-    #print(f"Number of unique IDs: {len(duplicate_counts)}")
-    #print(f"Number of duplicate IDs: {len(df) - len(duplicate_counts)}")
-    #print(f"Total number of rows: {len(df)}")
-    #unique_df = df.drop_duplicates(subset=[id_column],keep="last")
+    print(f"Number of unique IDs: {len(duplicate_counts)}")
+    print(f"Number of duplicate IDs: {len(df) - len(duplicate_counts)}")
+    print(f"Total number of rows: {len(df)}")
+    unique_df = df.drop_duplicates(subset=[id_column],keep="last")
 
-    return df
+    return unique_df
 

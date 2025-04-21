@@ -20,7 +20,7 @@ ROBOTSTXT_OBEY = False
 CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 5
 # The download delay setting will honor only one of:
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
 
@@ -52,17 +52,20 @@ ITEM_PIPELINES = {
    "eurex_scrapper.pipelines.VacancyCleanerPipeline": 100,
 }
 
+COOKIES_ENABLED = False
+
+# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+DOWNLOADER_MIDDLEWARES = {
+   "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
+}
+
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
 #    "eurex_scrapper.middlewares.EurexScrapperSpiderMiddleware": 543,
 #}
 
-# Enable or disable downloader middlewares
-# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "eurex_scrapper.middlewares.EurexScrapperDownloaderMiddleware": 543,
-#}
+
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

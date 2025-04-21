@@ -31,7 +31,11 @@ class VacancySpider(scrapy.Spider):
                 #'overwrite': True,
                 'encoding': 'utf-8',
             }
-        }
+        },
+        'DOWNLOAD_DELAY': 10,
+        'RANDOMIZE_DOWNLOAD_DELAY': True,
+        'CONCURRENT_REQUESTS': 1,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
     } 
 
     # let this parse be a metadata extactor, for now the only metadata is the final number of web pages to scrape
@@ -50,12 +54,15 @@ class VacancySpider(scrapy.Spider):
         # We go through every page and scrape the data using scrape_vacancy_data method of this class itself
         next_url = f"{self.base_url}/jobs/search?page={page_number}"
         
+        seen_links = []
+        
         yield scrapy.Request(
             url=next_url,
             callback=self.scrape_vacancy_data,
             meta={
                 "page_number": page_number,
-                "final_page_number": final_number_int
+                "final_page_number": final_number_int,
+                "seen_links": seen_links
             }
         )
             
@@ -69,11 +76,10 @@ class VacancySpider(scrapy.Spider):
         
         page_number = response.meta.get("page_number")
         final_page_number = response.meta.get("final_page_number")
+        seen_links = response.meta.get("seen_links")
 
         # Extracting the vacancy data
         job_list = response.xpath('//*[@id="oe-list-container"]/div[3]/div/ul/li')
-        
-        seen_links = []
         
         for job in job_list:
             vacancy_data = {
@@ -109,6 +115,7 @@ class VacancySpider(scrapy.Spider):
                 callback=self.scrape_vacancy_data,
                 meta={
                     "page_number": page_number,
-                    "final_page_number": final_page_number
+                    "final_page_number": final_page_number,
+                    "seen_links": seen_links
                     }
             )
