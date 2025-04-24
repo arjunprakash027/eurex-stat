@@ -6,7 +6,7 @@ import scrapy
 from typing import Dict, Any, Generator, Union
 from datetime import datetime
 from scrapy.exceptions import CloseSpider
-
+from eurex_scrapper.utils import lower_bound_date_check #type: ignore
 class RecentDateSpider(scrapy.Spider):
     """
     This spider is a one time run spider that extracts all the data from the Euraxess website
@@ -31,8 +31,12 @@ class RecentDateSpider(scrapy.Spider):
                 'overwrite': True,
                 'encoding': 'utf-8',
             }
-        }
-    } 
+        },
+        'DOWNLOAD_DELAY': 10,
+        'RANDOMIZE_DOWNLOAD_DELAY': True,
+        'CONCURRENT_REQUESTS': 1,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+    }
 
     # let this parse be a metadata extactor, for now the only metadata is the recent date
     def parse(self, 
@@ -73,7 +77,7 @@ class RecentDateSpider(scrapy.Spider):
             recent_date = job.xpath('.//article/div/ul[1]/li[2]/text()').get()
 
             # check if the date is today or not, if not raise and error and gracefully shutdown the spider
-            if self.is_today_check(recent_date):
+            if lower_bound_date_check(recent_date):
 
                 vacancy_data = {
                 "job_type": job.xpath('.//div/div[1]/ul/li[1]/span/text()').get(),
@@ -108,22 +112,4 @@ class RecentDateSpider(scrapy.Spider):
             meta={
                 "page_number": next_page_number
             }
-        ) 
-    
-    @staticmethod
-    def is_today_check(date_string:str) -> bool:
-        """
-        This method checks if the date string is today or not
-        """
-
-        today = datetime.today().date()
-
-        try:
-            parts = date_string.strip().replace('Posted on:','').strip()
-            date_object = datetime.strptime(parts, '%d %B %Y').date()
-        
-        except Exception as e:
-            print(f"Error parsing date string: {date_string} - {e}")
-            return False
-        
-        return date_object == today
+        )
