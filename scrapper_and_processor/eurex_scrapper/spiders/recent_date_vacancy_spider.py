@@ -50,12 +50,15 @@ class RecentDateSpider(scrapy.Spider):
         # we are using a sorted list of pages based on date and therefore if there is a date that is not today, we will stop the entire process
         next_url = f"{self.base_url}/jobs/search?sort%5Bname%5D=created&sort%5Bdirection%5D=DESC&page={page_number}"
 
+        seen_links = []
+
         # We scrape only the first page here and succussive pages will be scraped in the scrape_vacancy_data method of this class itself (recusrison to avoid infinite while loop)
         yield scrapy.Request(
             url=next_url,
             callback=self.scrape_vacancy_data,
             meta={
-                "page_number": page_number
+                "page_number": page_number,
+                "seen_links": seen_links
             }
         )
         
@@ -67,6 +70,7 @@ class RecentDateSpider(scrapy.Spider):
 
         print(f"Scraping next page : {response.url}")
         page_number = response.meta.get("page_number", 0)
+        seen_links = response.meta.get("seen_links")
 
         # Extracting the vacancy data
         job_list = response.xpath('//*[@id="oe-list-container"]/div[3]/div/ul/li')
@@ -96,6 +100,12 @@ class RecentDateSpider(scrapy.Spider):
                 "origin_page": response.url
             }
 
+                if vacancy_data["job_link"] in seen_links:
+                    # todo : repeat the same page after some delay instead of throwing an error
+                    raise CloseSpider(f"Seen a repeat of job ids at this page link : {response.url}")
+                
+                seen_links.append(vacancy_data["job_link"])
+
                 yield vacancy_data
 
             else:
@@ -110,6 +120,7 @@ class RecentDateSpider(scrapy.Spider):
             url=next_url,
             callback=self.scrape_vacancy_data,
             meta={
-                "page_number": next_page_number
+                "page_number": next_page_number,
+                "seen_links": seen_links
             }
         )

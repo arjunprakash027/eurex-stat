@@ -13,9 +13,16 @@ from eurex_feature_engineering.utils.stack_and_dedup import stack_and_dedup
 def group_and_merge_data() -> None:
     
     daily_files = os.listdir("eurex_feature_engineering/output/daily")
-    previous_transformed_file = "eurex_feature_engineering/output/transformed/jobs_combined.csv" \
-                                if os.path.exists("eurex_feature_engineering/output/transformed/jobs_combined.csv") \
-                                else "eurex_feature_engineering/output/jobs.csv"
+    
+    previous_transformed_file = next(
+                                (p for p in [
+                                    "eurex_feature_engineering/output/transformed/jobs_combined.csv",
+                                    "eurex_feature_engineering/output/jobs.csv",
+                                ]
+                                if os.path.exists(p)
+                                ),
+                                None
+                            )
     
     datasets = []
     for file in daily_files:
@@ -26,11 +33,11 @@ def group_and_merge_data() -> None:
         except Exception as e:
             print(f"Error on processing {file} : {e}")
     
-    previous_transformed_df = pd.read_csv(previous_transformed_file, encoding="utf-8")
-    # to ensure the previous transformed file has the same updated transformations if any, we run the transformations on it again to ensure that. None of the transformations delete any column and therefore I think it is fine to do this
-    previous_transformed_df = run_pipeline(previous_transformed_df)
-
-    datasets.append(previous_transformed_df)
+    if previous_transformed_file:
+        previous_transformed_df = pd.read_csv(previous_transformed_file, encoding="utf-8")
+        # to ensure the previous transformed file has the same updated transformations if any, we run the transformations on it again to ensure that. None of the transformations delete any column and therefore I think it is fine to do this
+        previous_transformed_df = run_pipeline(previous_transformed_df)
+        datasets.append(previous_transformed_df)
     
     merged_df = stack_and_dedup(
         dfs = datasets,

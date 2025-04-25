@@ -1,3 +1,4 @@
 scrapy
 scrapy-user-agents
 pyyaml
+pandas

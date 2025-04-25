@@ -1,1 +1,1 @@
-cutoff_date : 21-04-2025 #'today' is also valid
+cutoff_date : today #'today' is also valid or '01-02-2024' like DD-MM-YYYY format is also valid
