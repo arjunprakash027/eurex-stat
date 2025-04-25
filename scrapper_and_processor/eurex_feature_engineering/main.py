@@ -19,9 +19,12 @@ def group_and_merge_data() -> None:
     
     datasets = []
     for file in daily_files:
-        df_current_date = pd.read_csv(f"eurex_feature_engineering/output/daily/{file}",encoding="utf-8")
-        df_current_date = run_pipeline(df_current_date)
-        datasets.append(df_current_date)
+        try:
+            df_current_date = pd.read_csv(f"eurex_feature_engineering/output/daily/{file}",encoding="utf-8")
+            df_current_date = run_pipeline(df_current_date)
+            datasets.append(df_current_date)
+        except Exception as e:
+            print(f"Error on processing {file} : {e}")
     
     previous_transformed_df = pd.read_csv(previous_transformed_file, encoding="utf-8")
     # to ensure the previous transformed file has the same updated transformations if any, we run the transformations on it again to ensure that. None of the transformations delete any column and therefore I think it is fine to do this
