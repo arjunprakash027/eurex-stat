@@ -19,3 +19,4 @@ This repository is structured around three main goals:
 This repository includes multiple components, each with its own specific function. For technical details such as how the scrapers work or how to run the data pipeline, refer to the individual `README.md` files provided in the respective directories.
 
 1) [Scrapper](https://github.com/arjunprakash027/eurex-stat/blob/main/scrapper_and_processor/README.md)
+2) [Feature Engineering](https://github.com/arjunprakash027/eurex-stat/blob/main/scrapper_and_processor/eurex_feature_engineering/README.md)
