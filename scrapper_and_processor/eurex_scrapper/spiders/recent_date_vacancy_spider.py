@@ -39,7 +39,7 @@ class RecentDateSpider(scrapy.Spider):
     }
 
     # let this parse be a metadata extactor, for now the only metadata is the recent date
-    def parse(self, 
+    def parse(self,
               response
               ) -> Generator[scrapy.Request, Any, Any]:
 
