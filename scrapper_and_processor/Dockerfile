@@ -1,18 +1,34 @@
 # Manage all the dependencies here
-FROM python:3.13-slim as base
-WORKDIR /app
+FROM python:3.11-slim as builder
+
+# Wheel the dependencies
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
 COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip install --prefix=/install -r requirements.txt
 
-# Next stage with scrapper and processor
-FROM python:3.13-slim as scrapper_and_processor
+# Distroless runtime image
+FROM gcr.io/distroless/python3-debian12
+LABEL  org.opencontainers.image.title="eurex-stat" \
+       org.opencontainers.image.description="Daily scraping & processing for Eurex data" \
+       org.opencontainers.image.source="https://github.com/arjunprakash027/eurex-stat" \
+       org.opencontainers.image.licenses="MIT"\
+       org.opencontainers.image.documentation="https://github.com/arjunprakash027/eurex-stat" \
+       org.opencontainers.image.source="https://github.com/arjunprakash027/eurex-stat" \
+       maintainer="Arjun Prakash" \
+       org.opencontainers.image.authors="Arjun Prakash <arjunprakash027@gmail.com>"
+
+COPY --from=builder /install /usr/local
 WORKDIR /app
-COPY --from=base /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
 
-WORKDIR /app
-COPY . .
+ENV PYTHONPATH=/usr/local/lib/python3.11/site-packages:$PYTHONPATH
 
-RUN chmod +x entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+COPY eurex_feature_engineering ./eurex_feature_engineering
+COPY eurex_scrapper ./eurex_scrapper
+COPY scrapy.cfg .
+COPY entrypoint.py . 
+USER nobody
+ENTRYPOINT ["python3","/app/entrypoint.py"]
