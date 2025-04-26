@@ -1,0 +1,50 @@
+name : Build and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+    IMAGE_NAME: arjunrao123/eurex-stat
+    DOCKERHUB_REPO: arjunrao123/eurex-stat
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v2
+
+            - name: Extract Version
+              id: extract_version
+              run: |
+                VERSION=$(cat VERSION.txt | tr -d '[:space:]')
+                echo "VERSION=$VERSION" >> $GITHUB_ENV
+            
+            - name: Log onto Docker Hub
+              uses: docker/login-action@v2
+              with:
+                username: ${{ secrets.DOCKER_USERNAME }}
+                password: ${{ secrets.DOCKER_TOKEN }}
+            
+            - name: Build and Push
+              uses: docker/build-push-action@v2
+              with:
+                context: .
+                push: true
+                platforms: linux/amd64,linux/arm64
+                tags: |
+                    ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
+                    ${{ env.IMAGE_NAME }}:latest
+            
+            - name: Output Summary
+              run: |
+                echo "Docker image ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }} and ${{ env.IMAGE_NAME }}:latest have been built and pushed to Docker Hub."
+            
+            
