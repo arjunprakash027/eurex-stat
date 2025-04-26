@@ -4,6 +4,26 @@
 
 This project is built around the goal of extracting and analyzing data from the Euraxess job portal to better understand academic hiring trends, demand across research fields, geographic distribution, and more.
 
+## Quick Start – Run with Docker
+
+You don’t need Python, Poetry, or any local dependencies.  
+Simply pull the container from Docker Hub and run it; all outputs will land in a host-mounted folder of your choice.
+
+```bash
+docker run --rm -v "$(pwd)/data":/app/eurex_feature_engineering/output/transformed arjunrao123/eurex-stat:latest
+```
+
+* What happens:  
+  1. The Scrapy spider crawls Euraxess and stores raw listings.  
+  2. The processor cleans & enriches the data.  
+  3. All CSV outputs appear in `./data` on your machine.
+
+### Image details
+
+* **Docker Hub:** <https://hub.docker.com/r/arjunrao123/eurex-stat>
+
+The container removes itself after finishing (`--rm`), leaving only the data behind. Happy scraping!
+
 ## Project Overview
 
 This repository is structured around three main goals:
