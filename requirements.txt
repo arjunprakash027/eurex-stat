@@ -1,4 +1,4 @@
-scrapy
+scrapy==2.11
 scrapy-user-agents
-pyyaml
-pandas
+pyyaml==6.0.2
+pandas==2.2.3
