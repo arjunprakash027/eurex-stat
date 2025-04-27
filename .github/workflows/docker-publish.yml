@@ -42,6 +42,14 @@ jobs:
                     ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
                     ${{ env.IMAGE_NAME }}:latest
             
+            - name: Upload Readme
+              uses: docker/hub-tool-action@v1
+              with:
+                username: ${{ secrets.DOCKER_USERNAME }}
+                access-token: ${{ secrets.DOCKER_TOKEN }}
+                repository: arjunrao123/eurex-stat
+                readme-filepath: README.md
+            
             - name: Output Summary
               run: |
                 echo "Docker image ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }} and ${{ env.IMAGE_NAME }}:latest have been built and pushed to Docker Hub."
