@@ -1,0 +1,30 @@
+# Environment files
+.env
+.env.*
+.venv
+env/
+venv/
+ENV/
+
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Output and data
+output/
+**/output/
+downloads/
+.eggs/
+
+# IDE
+.vscode/

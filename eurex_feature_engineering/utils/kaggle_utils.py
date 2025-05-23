@@ -6,36 +6,32 @@ import glob
 import zipfile
 import pandas as pd
 import shutil
-from datetime import datetime # For datetime.date, datetime.strptime
-from typing import Optional, List, Any # Added Any for Dict[Any,Any] if needed, though not directly by these funcs
-
-# logging can be useful for these utilities
+from datetime import datetime
+from typing import Optional, List, Any
+from dotenv import load_dotenv
 import logging
-# Configure logging if it's not already configured by the importing module
-# A basic configuration if this module is run standalone or if no other config is set
+
+load_dotenv()
+from kaggle.api.kaggle_api_extended import KaggleApi
+
 if not logging.getLogger().hasHandlers():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-try:
-    import kaggle
-except (ImportError, OSError) as e:
-    logging.warning(f"Kaggle library/API not configured: {e}. Kaggle functions will not work.")
-    kaggle = None # Functions should check this or have their own try-except for import.
+# Lazy loading kaggle api only when needed so that error is not thrown when people who does not want to use kaggle uses main function
+_kaggle_api: Optional[KaggleApi] = None
+def _get_kaggle_api() -> KaggleApi:
+    global _kaggle_api
 
-# --- Kaggle Utility Functions --- (Copied from eurex_scrapper/utils.py)
+    if not _kaggle_api:
+        _kaggle_api = KaggleApi()
+        _kaggle_api.authenticate()
+
+    return _kaggle_api
 
 def download_dataset_from_kaggle(dataset_slug: str, download_path: str) -> Optional[str]:
     """
     Downloads dataset files from Kaggle, unzips them, and finds the main CSV and metadata.
     """
-    global kaggle # Allow modification of the global kaggle variable if needed (e.g. for re-import)
-    if kaggle is None:
-        try:
-            import kaggle as kg_api # Try to import it here if not available globally
-            kaggle = kg_api 
-        except (ImportError, OSError) as e:
-            logging.error(f"Kaggle API not configured or library not found: {e}")
-            return None
     
     try:
         # Clear existing download path more robustly
@@ -51,7 +47,7 @@ def download_dataset_from_kaggle(dataset_slug: str, download_path: str) -> Optio
         
         logging.info(f"Downloading dataset '{dataset_slug}' to '{download_path}'...")
         
-        kaggle.api.dataset_download_files(dataset_slug, path=download_path, unzip=False) # Download without unzipping first
+        _get_kaggle_api().dataset_download_files(dataset_slug, path=download_path, unzip=False) # Download without unzipping first
         
         # Determine expected zip file name from slug
         zip_file_name = dataset_slug.split('/')[-1] + '.zip'
@@ -82,7 +78,7 @@ def download_dataset_from_kaggle(dataset_slug: str, download_path: str) -> Optio
         else:
             logging.info(f"Found dataset-metadata.json at {metadata_json_path}")
 
-        known_csv_name = "Euraxess_job_dataset_till_13_Nov_2023.csv" # As per previous spec
+        known_csv_name = "jobs_combined.csv"
         preferred_csv_path = os.path.join(download_path, known_csv_name)
 
         if os.path.exists(preferred_csv_path):
@@ -156,14 +152,6 @@ def upload_dataset_to_kaggle(
     Uploads the updated dataset (single CSV) to Kaggle.
     Manages a temporary folder for packaging.
     """
-    global kaggle
-    if kaggle is None:
-        try:
-            import kaggle as kg_api
-            kaggle = kg_api
-        except (ImportError, OSError) as e:
-            logging.error(f"Kaggle API not configured or library not found: {e}")
-            return False
 
     temp_upload_dir = os.path.join(base_download_folder, 'temp_upload_package_for_kaggle')
     
@@ -192,7 +180,7 @@ def upload_dataset_to_kaggle(
         
         logging.info(f"Preparing to upload to Kaggle dataset (slug from metadata) from folder '{temp_upload_dir}'...")
         
-        kaggle.api.dataset_create_version(
+        _get_kaggle_api().dataset_create_version(
             folder=temp_upload_dir,
             version_notes=version_notes,
             quiet=False,
@@ -208,28 +196,3 @@ def upload_dataset_to_kaggle(
         if os.path.exists(temp_upload_dir):
             logging.info(f"Cleaning up temporary upload directory: {temp_upload_dir}")
             shutil.rmtree(temp_upload_dir)
-
-if __name__ == '__main__':
-    logging.info("kaggle_utils.py executed directly. Contains Kaggle utility functions.")
-    if kaggle:
-        logging.info(f"Kaggle API client version: {getattr(kaggle.api, 'version', 'unknown')}") # Safe getattr
-        # Basic test for download_dataset_from_kaggle (replace with a small, public dataset for actual testing)
-        # TEST_SLUG = " próprio/small-public-dataset" # A real small public dataset slug
-        # TEST_DOWNLOAD_DIR = "temp_kaggle_util_test"
-        # logging.info(f"Attempting test download of {TEST_SLUG} to {TEST_DOWNLOAD_DIR}")
-        # test_csv = download_dataset_from_kaggle(TEST_SLUG, TEST_DOWNLOAD_DIR)
-        # if test_csv:
-        #     logging.info(f"Test download successful: {test_csv}")
-        #     # Test get_latest_date_from_csv (assuming 'date' column or similar exists in the test CSV)
-        #     # latest_date = get_latest_date_from_csv(test_csv, "date_column_in_test_csv")
-        #     # if latest_date:
-        #     #     logging.info(f"Latest date in test CSV: {latest_date}")
-        #     # else:
-        #     #     logging.warning("Could not get latest date from test CSV.")
-        #     if os.path.exists(TEST_DOWNLOAD_DIR):
-        #         shutil.rmtree(TEST_DOWNLOAD_DIR)
-        #         logging.info(f"Cleaned up test download directory: {TEST_DOWNLOAD_DIR}")
-        # else:
-        #     logging.error(f"Test download failed for {TEST_SLUG}.")
-    else:
-        logging.warning("Kaggle API client not available. Cannot run tests.")

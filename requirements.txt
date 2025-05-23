@@ -3,3 +3,4 @@ scrapy-user-agents
 pyyaml==6.0.2
 pandas==2.2.3
 kaggle
+python-dotenv==1.0.0

@@ -7,15 +7,15 @@ import pandas as pd
 from eurex_feature_engineering.orchastrator import run_pipeline
 from typing import Any
 import os
-import argparse # Added
 from eurex_feature_engineering.utils.stack_and_dedup import stack_and_dedup
-
-# Attempt to import Kaggle utility functions
-try:
-    from eurex_feature_engineering.utils.kaggle_utils import (
+from eurex_feature_engineering.utils.kaggle_utils import (
         download_dataset_from_kaggle,
         upload_dataset_to_kaggle
     )
+
+# Attempt to import Kaggle utility functions
+try:
+    
     KAGGLE_UTILS_IMPORTED = True
     print("Successfully imported Kaggle utility functions.")
 except ImportError as e:
@@ -27,8 +27,6 @@ except ImportError as e:
 
 # --- Kaggle Workflow Constants ---
 KAGGLE_DATASET_SLUG = "arjunprakashrao/euraxess-full"
-# ROOT_DIR for this script is the eurex_feature_engineering directory itself.
-# To get to the project root (parent of eurex_feature_engineering), we go up one level.
 PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 KAGGLE_DOWNLOAD_PATH = os.path.join(PROJECT_ROOT_DIR, 'kaggle_download_temp_fe') # FE for Feature Engineering
 TEMP_UPLOAD_CSV_PATH = os.path.join(KAGGLE_DOWNLOAD_PATH, 'merged_for_kaggle_upload_fe.csv')
@@ -180,14 +178,5 @@ def group_and_merge_data(enable_kaggle_workflow: bool = False) -> None:
         
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process Euraxess job data and optionally integrate with Kaggle.")
-    parser.add_argument(
-        '--kaggle', 
-        action='store_true', 
-        help='Enable Kaggle workflow: download latest data from Kaggle, process local daily files, merge, transform all, and upload back to Kaggle.'
-    )
-    args = parser.parse_args()
-
-    print(f"Running with Kaggle workflow {'enabled' if args.kaggle else 'disabled'}.")
-    group_and_merge_data(enable_kaggle_workflow=args.kaggle)
-
+    #group_and_merge_data(enable_kaggle_workflow=False)
+    download_dataset_from_kaggle(KAGGLE_DATASET_SLUG, KAGGLE_DOWNLOAD_PATH)
