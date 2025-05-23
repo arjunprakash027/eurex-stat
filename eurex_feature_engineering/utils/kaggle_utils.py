@@ -48,6 +48,7 @@ def download_dataset_from_kaggle(dataset_slug: str, download_path: str) -> Optio
         logging.info(f"Downloading dataset '{dataset_slug}' to '{download_path}'...")
         
         _get_kaggle_api().dataset_download_files(dataset_slug, path=download_path, unzip=False) # Download without unzipping first
+        _get_kaggle_api().dataset_metadata(dataset=dataset_slug,path=download_path)
         
         # Determine expected zip file name from slug
         zip_file_name = dataset_slug.split('/')[-1] + '.zip'
@@ -71,12 +72,6 @@ def download_dataset_from_kaggle(dataset_slug: str, download_path: str) -> Optio
             logging.info(f"Removed zip file: {zip_file_path}")
         except OSError as e_rem:
             logging.warning(f"Could not remove zip file {zip_file_path}: {e_rem}")
-
-        metadata_json_path = os.path.join(download_path, 'dataset-metadata.json')
-        if not os.path.exists(metadata_json_path):
-            logging.warning("Warning: dataset-metadata.json not found in the unzipped files.")
-        else:
-            logging.info(f"Found dataset-metadata.json at {metadata_json_path}")
 
         known_csv_name = "jobs_combined.csv"
         preferred_csv_path = os.path.join(download_path, known_csv_name)
@@ -145,7 +140,7 @@ def upload_dataset_to_kaggle(
     dataset_slug: str, 
     base_download_folder: str, 
     updated_csv_path: str,
-    original_dataset_csv_name: str, # The name the CSV file should have in the Kaggle dataset
+    original_dataset_csv_name: str,
     version_notes: str
 ) -> bool:
     """
